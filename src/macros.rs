@@ -78,7 +78,7 @@ macro_rules! register_g_function {
                             let arg1 = iter.next().unwrap();
                             let arg2 = iter.next().unwrap();
                             let domain = if count > 3 {
-                                Some(iter.collect::<Vec<_>>().join("_"))
+                                Some(iter.map(|s| s.to_string()).collect::<Vec<_>>().join("_"))
                             } else {
                                 iter.next().map(|s| s.as_str())
                             };
