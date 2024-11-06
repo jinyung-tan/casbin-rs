@@ -80,7 +80,7 @@ macro_rules! register_g_function {
                             let domain = if count > 3 {
                                 Some(iter.map(|s| s.to_string()).collect::<Vec<_>>().join("_"))
                             } else {
-                                iter.next().map(|s| s.as_str())
+                                iter.next().map(|s| s.to_string())
                             };
                             rm.read().has_link(arg1, arg2, domain.as_deref())
                         } else {
