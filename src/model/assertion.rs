@@ -51,13 +51,6 @@ impl Assertion {
         rm: Arc<RwLock<dyn RoleManager>>,
     ) -> Result<()> {
         let count = self.value.matches('_').count();
-        if count < 2 {
-            return Err(ModelError::P(
-                r#"the number of "_" in role definition should be at least 2"#
-                    .to_owned(),
-            )
-            .into());
-        }
         for rule in &self.policy {
             if rule.len() < count {
                 return Err(PolicyError::UnmatchPolicyDefinition(
