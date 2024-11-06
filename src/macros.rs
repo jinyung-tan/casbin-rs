@@ -50,28 +50,45 @@ macro_rules! register_g_function {
         let rm = Arc::clone(&$enforcer.rm);
         let count = $ast.value.matches('_').count();
 
-        if count == 2 {
-            $enforcer.engine.register_fn(
-                $fname,
-                move |arg1: ImmutableString, arg2: ImmutableString| {
-                    rm.read().has_link(&arg1, &arg2, None)
-                },
-            );
-        } else if count == 3 {
-            $enforcer.engine.register_fn(
-                $fname,
-                move |arg1: ImmutableString,
-                      arg2: ImmutableString,
-                      arg3: ImmutableString| {
-                    rm.read().has_link(&arg1, &arg2, Some(&arg3))
-                },
-            );
-        } else {
-            return Err(ModelError::P(
-                r#"the number of "_" in role definition should be at least 2"#
-                    .to_owned(),
-            )
-            .into());
+        match count {
+            2 => {
+                $enforcer.engine.register_fn(
+                    $fname,
+                    move |arg1: ImmutableString, arg2: ImmutableString| {
+                        rm.read().has_link(&arg1, &arg2, None)
+                    },
+                );
+            }
+            3 => {
+                $enforcer.engine.register_fn(
+                    $fname,
+                    move |arg1: ImmutableString,
+                          arg2: ImmutableString,
+                          arg3: ImmutableString| {
+                        rm.read().has_link(&arg1, &arg2, Some(&arg3))
+                    },
+                );
+            }
+            _ => {
+                $enforcer.engine.register_fn(
+                    $fname,
+                    move |args: Vec<ImmutableString>| {
+                        if args.len() == count {
+                            let mut iter = args.iter();
+                            let arg1 = iter.next().unwrap();
+                            let arg2 = iter.next().unwrap();
+                            let domain = if count > 3 {
+                                Some(iter.collect::<Vec<_>>().join("_"))
+                            } else {
+                                iter.next().map(|s| s.as_str())
+                            };
+                            rm.read().has_link(arg1, arg2, domain.as_deref())
+                        } else {
+                            false
+                        }
+                    },
+                );
+            }
         }
     }};
 }
